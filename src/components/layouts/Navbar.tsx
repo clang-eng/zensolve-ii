@@ -3,14 +3,16 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { User, LogOut, LayoutDashboard, Menu, X, Rocket, Map, Trophy } from 'lucide-react';
+import { User, LogOut, LayoutDashboard, Menu, X, Rocket, Map, Trophy, Download } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { usePWA } from '@/hooks/usePWA';
 
 export default function Navbar() {
     const [user, setUser] = useState<any>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const router = useRouter();
+    const { isInstallable, installApp } = usePWA();
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
@@ -58,31 +60,43 @@ export default function Navbar() {
                         </Link>
                     ))}
 
-                    {user ? (
-                        <div className="flex items-center gap-4 border-l border-white/10 pl-8">
-                            <Link
-                                href="/dashboard"
-                                className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
-                            >
-                                <LayoutDashboard className="w-4 h-4" />
-                                Dashboard
-                            </Link>
+                    <div className="flex items-center gap-4 border-l border-white/10 pl-8">
+                        {isInstallable && (
                             <button
-                                onClick={handleLogout}
-                                className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-gray-400 hover:text-white"
-                                title="Logout"
+                                onClick={installApp}
+                                className="flex items-center gap-2 px-4 py-2 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 rounded-full transition-all text-xs font-bold"
                             >
-                                <LogOut className="w-4 h-4" />
+                                <Download className="w-3.5 h-3.5" />
+                                Install App
                             </button>
-                        </div>
-                    ) : (
-                        <Link
-                            href="/login"
-                            className="px-6 py-2.5 bg-white text-black rounded-full hover:bg-gray-200 transition-all text-sm font-bold shadow-lg shadow-white/5"
-                        >
-                            Sign In
-                        </Link>
-                    )}
+                        )}
+
+                        {user ? (
+                            <>
+                                <Link
+                                    href="/dashboard"
+                                    className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    Dashboard
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-gray-400 hover:text-white"
+                                    title="Logout"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                </button>
+                            </>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="px-6 py-2.5 bg-white text-black rounded-full hover:bg-gray-200 transition-all text-sm font-bold shadow-lg shadow-white/5"
+                            >
+                                Sign In
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile Toggle */}
@@ -97,6 +111,19 @@ export default function Navbar() {
             {/* Mobile Menu */}
             {mobileMenuOpen && (
                 <div className="md:hidden absolute top-20 left-0 w-full bg-black border-b border-white/10 p-6 flex flex-col gap-6 animate-fade-in slide-in-from-top-4">
+                    {isInstallable && (
+                        <button
+                            onClick={() => {
+                                installApp();
+                                setMobileMenuOpen(false);
+                            }}
+                            className="w-full py-4 bg-teal-500/10 border border-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center gap-3 font-bold"
+                        >
+                            <Download className="w-5 h-5" />
+                            Install App
+                        </button>
+                    )}
+
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
@@ -139,5 +166,6 @@ export default function Navbar() {
                 </div>
             )}
         </nav>
+
     );
 }
