@@ -44,10 +44,19 @@ export default function ExplorePage() {
     const [selectedStatus, setSelectedStatus] = useState('All');
     const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
 
+    const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const hasMapsKey = mapsKey && mapsKey !== '' && mapsKey !== 'your_actual_google_maps_key';
+
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+        googleMapsApiKey: hasMapsKey ? mapsKey : ''
     });
+
+    useEffect(() => {
+        if (!hasMapsKey) {
+            setView('list');
+        }
+    }, [hasMapsKey]);
 
     useEffect(() => {
         fetchComplaints();
@@ -125,9 +134,10 @@ export default function ExplorePage() {
                             List
                         </button>
                         <button
-                            onClick={() => setView('map')}
+                            onClick={() => hasMapsKey && setView('map')}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${view === 'map' ? 'bg-teal-500 text-black shadow-lg shadow-teal-500/20' : 'text-gray-400 hover:text-white'
-                                }`}
+                                } ${!hasMapsKey ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            title={!hasMapsKey ? 'Map view temporarily disabled' : ''}
                         >
                             <MapIcon className="w-4 h-4" />
                             Map
@@ -145,8 +155,8 @@ export default function ExplorePage() {
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-5 py-2 rounded-full text-sm font-medium border transition-all shrink-0 ${selectedCategory === cat
-                                    ? 'bg-white/10 border-white/20 text-white'
-                                    : 'bg-transparent border-white/5 text-gray-500 hover:border-white/10 hover:text-gray-300'
+                                ? 'bg-white/10 border-white/20 text-white'
+                                : 'bg-transparent border-white/5 text-gray-500 hover:border-white/10 hover:text-gray-300'
                                 }`}
                         >
                             {cat}
@@ -185,8 +195,8 @@ export default function ExplorePage() {
                                                 )}
                                                 <div className="absolute top-4 left-4">
                                                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md shadow-lg ${complaint.status === 'resolved' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                                                            complaint.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                                                                'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
+                                                        complaint.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                                            'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
                                                         }`}>
                                                         {complaint.status}
                                                     </span>
