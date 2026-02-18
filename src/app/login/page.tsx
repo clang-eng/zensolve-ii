@@ -1,5 +1,6 @@
 import AuthForm from '@/components/auth/AuthForm';
 import Navbar from '@/components/layouts/Navbar';
+import Link from 'next/link';
 
 export default function LoginPage() {
     return (
@@ -13,8 +14,12 @@ export default function LoginPage() {
             <AuthForm />
 
             <p className="mt-8 text-gray-500 text-sm">
-                By continuing, you agree to ZenSolve's Terms and Privacy Policy.
+                By continuing, you agree to ZenSolve&apos;s Terms and Privacy Policy.
             </p>
+
+            <Link href="/admin/login" className="mt-2 text-xs text-teal-400/80 hover:text-teal-300 transition-colors">
+                Staff member? Use Admin Login
+            </Link>
         </main>
     );
 }

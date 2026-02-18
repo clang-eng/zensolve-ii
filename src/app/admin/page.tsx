@@ -66,7 +66,7 @@ export default function AdminDashboard() {
         const checkAdmin = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.push('/login');
+                router.push('/admin/login');
                 return;
             }
 
