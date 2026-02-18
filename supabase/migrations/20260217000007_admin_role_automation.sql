@@ -59,11 +59,19 @@ CREATE TRIGGER trg_staff_allowlist_updated_at
 CREATE OR REPLACE FUNCTION sync_staff_role_on_allowlist_change()
 RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE users
-  SET role = NEW.role,
-      updated_at = NOW()
-  WHERE LOWER(email) = LOWER(NEW.email)
-    AND NEW.is_active = true;
+  IF NEW.is_active = true THEN
+    UPDATE users
+    SET role = NEW.role,
+        updated_at = NOW()
+    WHERE LOWER(email) = LOWER(NEW.email)
+      AND role <> NEW.role;
+  ELSIF TG_OP = 'UPDATE' AND OLD.is_active = true THEN
+    UPDATE users
+    SET role = 'citizen',
+        updated_at = NOW()
+    WHERE LOWER(email) = LOWER(NEW.email)
+      AND role IN ('admin', 'department');
+  END IF;
 
   RETURN NEW;
 END;
