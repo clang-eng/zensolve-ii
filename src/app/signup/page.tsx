@@ -1,9 +1,9 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import LoginForm from '@/components/auth/LoginForm';
+import SignupForm from '@/components/auth/SignupForm';
 
-export default async function LoginPage() {
+export default async function SignupPage() {
     const supabase = createServerComponentClient({ cookies });
     const {
         data: { session },
@@ -25,7 +25,7 @@ export default async function LoginPage() {
 
     return (
         <main className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-6">
-            <LoginForm />
+            <SignupForm />
         </main>
     );
 }
