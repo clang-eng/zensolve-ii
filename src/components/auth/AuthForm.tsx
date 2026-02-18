@@ -42,7 +42,7 @@ export default function AuthForm({ portal = 'citizen' }: AuthFormProps) {
                     .single();
 
                 if (profileError) {
-                    if (portal === 'admin') {
+                    if (portal === 'admin' && profileError.code === 'PGRST116') {
                         await supabase.auth.signOut();
                         router.push('/admin/not-signed-up');
                         return;
