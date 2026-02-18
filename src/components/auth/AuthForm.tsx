@@ -6,7 +6,11 @@ import { supabase } from '@/lib/supabase';
 import { Loader2, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function AuthForm() {
+type AuthFormProps = {
+    portal?: 'citizen' | 'admin';
+};
+
+export default function AuthForm({ portal = 'citizen' }: AuthFormProps) {
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
@@ -22,12 +26,38 @@ export default function AuthForm() {
 
         try {
             if (isLogin) {
-                const { error } = await supabase.auth.signInWithPassword({
+                const { error, data } = await supabase.auth.signInWithPassword({
                     email,
                     password,
                 });
                 if (error) throw error;
-                router.push('/dashboard');
+
+                const userId = data.user?.id;
+                if (!userId) throw new Error('Unable to verify user account. Please try again.');
+
+                const { data: profile, error: profileError } = await supabase
+                    .from('users')
+                    .select('role')
+                    .eq('id', userId)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                if (portal === 'admin') {
+                    if (profile?.role === 'admin' || profile?.role === 'department') {
+                        router.push('/admin');
+                    } else {
+                        await supabase.auth.signOut();
+                        setError('Access denied. This login is only for admins and department staff.');
+                    }
+                    return;
+                }
+
+                if (profile?.role === 'admin' || profile?.role === 'department') {
+                    router.push('/admin');
+                } else {
+                    router.push('/dashboard');
+                }
             } else {
                 const { error } = await supabase.auth.signUp({
                     email,
@@ -41,8 +71,8 @@ export default function AuthForm() {
                 if (error) throw error;
                 setError("Check your email for the confirmation link!");
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Authentication failed');
         } finally {
             setLoading(false);
         }
@@ -53,10 +83,12 @@ export default function AuthForm() {
             <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl">
                 <div className="text-center mb-10">
                     <h2 className="text-3xl font-bold tracking-tight mb-2">
-                        {isLogin ? 'Welcome Back' : 'Join ZenSolve'}
+                        {isLogin ? (portal === 'admin' ? 'Admin Access' : 'Welcome Back') : 'Join ZenSolve'}
                     </h2>
                     <p className="text-gray-400">
-                        {isLogin ? 'Enter your details to sign in' : 'Create an account to start reporting'}
+                        {isLogin
+                            ? (portal === 'admin' ? 'Sign in with your staff account credentials' : 'Enter your details to sign in')
+                            : 'Create an account to start reporting'}
                     </p>
                 </div>
 
@@ -125,14 +157,16 @@ export default function AuthForm() {
                     </button>
                 </form>
 
-                <div className="mt-8 text-center text-sm">
-                    <button
-                        onClick={() => setIsLogin(!isLogin)}
-                        className="text-gray-400 hover:text-white transition-colors"
-                    >
-                        {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
-                    </button>
-                </div>
+                {portal !== 'admin' && (
+                    <div className="mt-8 text-center text-sm">
+                        <button
+                            onClick={() => setIsLogin(!isLogin)}
+                            className="text-gray-400 hover:text-white transition-colors"
+                        >
+                            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
