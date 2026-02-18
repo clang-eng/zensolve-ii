@@ -1,6 +1,5 @@
 import AuthForm from '@/components/auth/AuthForm';
 import Navbar from '@/components/layouts/Navbar';
-import Link from 'next/link';
 
 export default function AdminLoginPage() {
     return (
@@ -15,10 +14,6 @@ export default function AdminLoginPage() {
             <p className="mt-8 text-gray-500 text-sm text-center">
                 Restricted area. Only verified admin and department accounts can proceed.
             </p>
-
-            <Link href="/admin/not-signed-up" className="mt-2 text-xs text-amber-400/80 hover:text-amber-300 transition-colors">
-                No admin account yet? Start setup
-            </Link>
         </main>
     );
 }
