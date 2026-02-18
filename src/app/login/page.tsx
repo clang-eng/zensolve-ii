@@ -1,25 +1,31 @@
-import AuthForm from '@/components/auth/AuthForm';
-import Navbar from '@/components/layouts/Navbar';
-import Link from 'next/link';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import LoginForm from '@/components/auth/LoginForm';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+    const supabase = createServerComponentClient({ cookies });
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session?.user?.id) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profile?.role === 'admin') {
+            redirect('/admin');
+        }
+
+        redirect('/dashboard');
+    }
+
     return (
-        <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 relative overflow-hidden">
-            <Navbar />
-
-            {/* Background Orbs */}
-            <div className="absolute top-1/4 -left-20 w-80 h-80 bg-teal-500/10 blur-[100px] rounded-full" />
-            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full" />
-
-            <AuthForm />
-
-            <p className="mt-8 text-gray-500 text-sm">
-                By continuing, you agree to ZenSolve&apos;s Terms and Privacy Policy.
-            </p>
-
-            <Link href="/admin/login" className="mt-2 text-xs text-teal-400/80 hover:text-teal-300 transition-colors">
-                Staff member? Use Admin Login
-            </Link>
+        <main className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-6">
+            <LoginForm />
         </main>
     );
 }
