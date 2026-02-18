@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserSupabaseClient } from '@/lib/supabase';
@@ -96,15 +95,6 @@ export default function LoginForm() {
             >
                 {loading ? 'Signing in...' : 'Sign in'}
             </button>
-
-
-            <p className="text-sm text-gray-300">
-                New to ZenSolve?{' '}
-                <Link href="/signup" className="font-medium text-teal-300 hover:text-teal-200">
-                    Create an account
-                </Link>
-            </p>
-
         </form>
     );
 }
